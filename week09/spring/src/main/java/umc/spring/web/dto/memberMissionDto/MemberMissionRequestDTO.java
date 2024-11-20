@@ -1,6 +1,7 @@
 package umc.spring.web.dto.memberMissionDto;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.Getter;
 import umc.spring.validation.annotaion.NotInProgressMission;
 
@@ -15,4 +16,11 @@ public class MemberMissionRequestDTO {
         @NotNull(message = "멤버 ID는 필수 입력 사항입니다.")
         private Long memberId;
     }
+
+    @Data
+    public static class CompleteMissionDto {
+        private Long memberId;
+        private Long missionId;
+    }
+
 }

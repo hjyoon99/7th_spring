@@ -1,6 +1,7 @@
 package umc.spring.service.memberMissionService;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import umc.spring.apiPayload.code.status.ErrorStatus;
@@ -32,7 +33,7 @@ public class MemberMissionCommandServiceImpl implements MemberMissionCommandServ
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException(ErrorStatus.MEMBER_NOT_FOUND.getMessage()));
 
-        checkDuplicateMission(request.getMemberId(), request.getMissionId());
+        checkDuplicateMissionProgress(request.getMemberId(), request.getMissionId());
 
         MemberMission memberMission = MemberMissionConverter.toMemberMission(
                 member,
@@ -40,11 +41,29 @@ public class MemberMissionCommandServiceImpl implements MemberMissionCommandServ
                 MissionStatus.IN_PROGRESS
         );
 
+        // memberMissionRepository에 저장
         return memberMissionRepository.save(memberMission);
     }
 
+    @Override
+    public MemberMission patchCompleteMission(MemberMissionRequestDTO.CompleteMissionDto request) {
+        // MemberMissionRepository에서 IN_PROGRESS인 memberMission을 가져옴
+        MemberMission memberMission = memberMissionRepository.findByMemberIdAndMissionIdAndStatus(
+                request.getMemberId(),
+                request.getMissionId(),
+                MissionStatus.IN_PROGRESS
+        ).orElseThrow(() -> new IllegalArgumentException(ErrorStatus.MISSION_ALREADY_COMPLETED.getMessage()));
+
+        // 상태 변경 (setter를 안쓰기 위해서 memberMission엔티티에서 캡슐화)
+        memberMission.completeMission();
+
+        // 변경된 엔티티 저장
+        return memberMissionRepository.save(memberMission);
+    }
+
+
     // 중복체크로직
-    private void checkDuplicateMission(Long memberId, Long missionId) {
+    private void checkDuplicateMissionProgress(Long memberId, Long missionId) {
         if (memberMissionRepository.existsByMemberIdAndMissionIdAndStatus(
                 memberId, missionId, MissionStatus.IN_PROGRESS)) {
             throw new IllegalArgumentException(ErrorStatus.MISSION_ALREADY_IN_PROGRESS.getMessage());
