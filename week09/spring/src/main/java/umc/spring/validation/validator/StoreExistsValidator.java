@@ -3,12 +3,14 @@ package umc.spring.validation.validator;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import umc.spring.apiPayload.code.status.ErrorStatus;
 import umc.spring.repository.storeRepository.StoreRepository;
 import umc.spring.validation.annotaion.ExistStore;
 
 import java.lang.annotation.Annotation;
 
+@Component
 @RequiredArgsConstructor
 public class StoreExistsValidator implements ConstraintValidator<ExistStore, Long> {
 

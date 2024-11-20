@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import umc.spring.apiPayload.ApiResponse;
 import umc.spring.converter.MemberConverter;
@@ -17,8 +19,11 @@ import umc.spring.converter.StoreConverter;
 import umc.spring.domain.Member;
 import umc.spring.domain.Review;
 import umc.spring.service.memberService.MemberCommandService;
+import umc.spring.service.memberService.MemberQueryService;
 import umc.spring.service.memberService.MemberQueryServiceImpl;
+import umc.spring.service.reviewService.ReviewQueryService;
 import umc.spring.service.reviewService.ReviewQueryServiceImpl;
+import umc.spring.validation.annotaion.CheckPage;
 import umc.spring.validation.annotaion.ExistStore;
 import umc.spring.web.dto.memberDto.MemberRequestDTO;
 import umc.spring.web.dto.memberDto.MemberResponseDTO;
@@ -27,11 +32,12 @@ import umc.spring.web.dto.reviewDto.ReviewResponseDTO;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/members")
+@Validated
 public class MemberRestController {
 
     private final MemberCommandService memberCommandService;
-    private final ReviewQueryServiceImpl reviewQueryServiceImpl;
-    private final MemberQueryServiceImpl memberQueryServiceImpl;
+    private final ReviewQueryService reviewQueryService;
+    private final MemberQueryService memberQueryService;
 
     @PostMapping("/")
     public ApiResponse<MemberResponseDTO.JoinResultDTO> join(@Valid @RequestBody MemberRequestDTO.JoinDto request){
@@ -53,8 +59,8 @@ public class MemberRestController {
     })
     public ApiResponse<ReviewResponseDTO.ReviewPreViewListDTO> getReviewList(@ExistStore @PathVariable(name = "storeId") Long storeId,
                                                                              @PathVariable(name = "memberId") Long memberId,
-                                                                             @RequestParam(name = "page") Integer page){
-        Page<Review> reviewList = memberQueryServiceImpl.getReviewsByMemberAndStore(storeId, memberId, page);
+                                                                             @CheckPage @RequestParam(name = "page") Integer page){
+        Page<Review> reviewList = memberQueryService.getReviewsByMemberAndStore(storeId, memberId, page);
         return ApiResponse.onSuccess(ReviewConverter.reviewPreViewListDTO(reviewList));
     }
 }
